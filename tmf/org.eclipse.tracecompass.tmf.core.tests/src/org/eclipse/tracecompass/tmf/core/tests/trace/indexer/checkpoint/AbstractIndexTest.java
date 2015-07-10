@@ -83,7 +83,7 @@ public abstract class AbstractIndexTest {
      * @return the trace path
      */
     protected String getTracePath() {
-        return TmfTestTrace.A_TEST_10K.getFullPath();
+        return TmfTestTrace.A_TEST_10K.getPath();
     }
 
     /**
