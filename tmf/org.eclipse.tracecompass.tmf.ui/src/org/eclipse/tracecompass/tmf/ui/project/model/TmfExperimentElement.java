@@ -68,34 +68,34 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
     // ------------------------------------------------------------------------
 
     // Property View stuff
-    private static final String INFO_CATEGORY = "Info"; //$NON-NLS-1$
-    private static final String NAME = "name"; //$NON-NLS-1$
-    private static final String PATH = "path"; //$NON-NLS-1$
-    private static final String LOCATION = "location"; //$NON-NLS-1$
-    private static final String FOLDER_SUFFIX = "_exp"; //$NON-NLS-1$
-    private static final String EXPERIMENT_TYPE = "type"; //$NON-NLS-1$
+    private static final String sfInfoCategory = "Info"; //$NON-NLS-1$
+    private static final String sfName = "name"; //$NON-NLS-1$
+    private static final String sfPath = "path"; //$NON-NLS-1$
+    private static final String sfLocation = "location"; //$NON-NLS-1$
+    private static final String sfFolderSuffix = "_exp"; //$NON-NLS-1$
+    private static final String sfExperimentType = "type"; //$NON-NLS-1$
 
-    private static final ReadOnlyTextPropertyDescriptor NAME_DESCRIPTOR = new ReadOnlyTextPropertyDescriptor(NAME, NAME);
-    private static final ReadOnlyTextPropertyDescriptor PATH_DESCRIPTOR = new ReadOnlyTextPropertyDescriptor(PATH, PATH);
-    private static final ReadOnlyTextPropertyDescriptor LOCATION_DESCRIPTOR = new ReadOnlyTextPropertyDescriptor(LOCATION,
-            LOCATION);
-    private static final ReadOnlyTextPropertyDescriptor TYPE_DESCRIPTOR = new ReadOnlyTextPropertyDescriptor(EXPERIMENT_TYPE, EXPERIMENT_TYPE);
+    private static final ReadOnlyTextPropertyDescriptor sfNameDescriptor = new ReadOnlyTextPropertyDescriptor(sfName, sfName);
+    private static final ReadOnlyTextPropertyDescriptor sfPathDescriptor = new ReadOnlyTextPropertyDescriptor(sfPath, sfPath);
+    private static final ReadOnlyTextPropertyDescriptor sfLocationDescriptor = new ReadOnlyTextPropertyDescriptor(sfLocation,
+            sfLocation);
+    private static final ReadOnlyTextPropertyDescriptor sfTypeDescriptor = new ReadOnlyTextPropertyDescriptor(sfExperimentType, sfExperimentType);
 
-    private static final IPropertyDescriptor[] DESCRIPTORS = { NAME_DESCRIPTOR, PATH_DESCRIPTOR,
-            LOCATION_DESCRIPTOR, TYPE_DESCRIPTOR };
+    private static final IPropertyDescriptor[] sfDescriptors = { sfNameDescriptor, sfPathDescriptor,
+            sfLocationDescriptor, sfTypeDescriptor };
 
     static {
-        NAME_DESCRIPTOR.setCategory(INFO_CATEGORY);
-        PATH_DESCRIPTOR.setCategory(INFO_CATEGORY);
-        LOCATION_DESCRIPTOR.setCategory(INFO_CATEGORY);
-        TYPE_DESCRIPTOR.setCategory(INFO_CATEGORY);
+        sfNameDescriptor.setCategory(sfInfoCategory);
+        sfPathDescriptor.setCategory(sfInfoCategory);
+        sfLocationDescriptor.setCategory(sfInfoCategory);
+        sfTypeDescriptor.setCategory(sfInfoCategory);
     }
 
     // The mapping of available trace type IDs to their corresponding
     // configuration element
-    private static final Map<String, IConfigurationElement> TRACE_TYPE_ATTRIBUTES = new HashMap<>();
-    private static final Map<String, IConfigurationElement> TRACE_TYPE_UI_ATTRIBUTES = new HashMap<>();
-    private static final Map<String, IConfigurationElement> TRACE_CATEGORIES = new HashMap<>();
+    private static final Map<String, IConfigurationElement> sfTraceTypeAttributes = new HashMap<>();
+    private static final Map<String, IConfigurationElement> sfTraceTypeUIAttributes = new HashMap<>();
+    private static final Map<String, IConfigurationElement> sfTraceCategories = new HashMap<>();
 
     // ------------------------------------------------------------------------
     // Static initialization
@@ -111,10 +111,10 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
             String elementName = ce.getName();
             if (elementName.equals(TmfTraceType.EXPERIMENT_ELEM)) {
                 String traceTypeId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                TRACE_TYPE_ATTRIBUTES.put(traceTypeId, ce);
+                sfTraceTypeAttributes.put(traceTypeId, ce);
             } else if (elementName.equals(TmfTraceType.CATEGORY_ELEM)) {
                 String categoryId = ce.getAttribute(TmfTraceType.ID_ATTR);
-                TRACE_CATEGORIES.put(categoryId, ce);
+                sfTraceCategories.put(categoryId, ce);
             }
         }
 
@@ -127,7 +127,7 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
             String elemName = ce.getName();
             if (TmfTraceTypeUIUtils.EXPERIMENT_ELEM.equals(elemName)) {
                 String traceType = ce.getAttribute(TmfTraceTypeUIUtils.TRACETYPE_ATTR);
-                TRACE_TYPE_UI_ATTRIBUTES.put(traceType, ce);
+                sfTraceTypeUIAttributes.put(traceType, ce);
             }
         }
     }
@@ -374,7 +374,7 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
     public String getEditorId() {
         /* See if a default editor was set for this experiment type */
         if (getTraceType() != null) {
-            IConfigurationElement ce = TRACE_TYPE_UI_ATTRIBUTES.get(getTraceType());
+            IConfigurationElement ce = sfTraceTypeUIAttributes.get(getTraceType());
             if (ce != null) {
                 IConfigurationElement[] defaultEditorCE = ce.getChildren(TmfTraceTypeUIUtils.DEFAULT_EDITOR_ELEM);
                 if (defaultEditorCE.length == 1) {
@@ -415,7 +415,7 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
 
             if (getTraceType() != null) {
 
-                IConfigurationElement ce = TRACE_TYPE_ATTRIBUTES.get(getTraceType());
+                IConfigurationElement ce = sfTraceTypeAttributes.get(getTraceType());
                 if (ce == null) {
                     return null;
                 }
@@ -444,33 +444,33 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
 
     @Override
     public IPropertyDescriptor[] getPropertyDescriptors() {
-        return Arrays.copyOf(DESCRIPTORS, DESCRIPTORS.length);
+        return Arrays.copyOf(sfDescriptors, sfDescriptors.length);
     }
 
     @Override
     public Object getPropertyValue(Object id) {
 
-        if (NAME.equals(id)) {
+        if (sfName.equals(id)) {
             return getName();
         }
 
-        if (PATH.equals(id)) {
+        if (sfPath.equals(id)) {
             return getPath().toString();
         }
 
-        if (LOCATION.equals(id)) {
+        if (sfLocation.equals(id)) {
             return getLocation().toString();
         }
 
-        if (EXPERIMENT_TYPE.equals(id)) {
+        if (sfExperimentType.equals(id)) {
             if (getTraceType() != null) {
-                IConfigurationElement ce = TRACE_TYPE_ATTRIBUTES.get(getTraceType());
+                IConfigurationElement ce = sfTraceTypeAttributes.get(getTraceType());
                 if (ce == null) {
                     return ""; //$NON-NLS-1$
                 }
                 String categoryId = ce.getAttribute(TmfTraceType.CATEGORY_ATTR);
                 if (categoryId != null) {
-                    IConfigurationElement category = TRACE_CATEGORIES.get(categoryId);
+                    IConfigurationElement category = sfTraceCategories.get(categoryId);
                     if (category != null) {
                         return category.getAttribute(TmfTraceType.NAME_ATTR) + ':' + ce.getAttribute(TmfTraceType.NAME_ATTR);
                     }
@@ -506,7 +506,7 @@ public class TmfExperimentElement extends TmfCommonProjectElement implements IPr
      */
     @Override
     public String getSuffix() {
-        return FOLDER_SUFFIX;
+        return sfFolderSuffix;
     }
 
 }

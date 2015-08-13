@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 École Polytechnique de Montréal
+ * Copyright (c) 2014, 2015 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are
  * made available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Geneviève Bastien - Initial API and implementation
+ *   Jonathan Sauvé - Adding functionnalities for the XML Manager
  *******************************************************************************/
 
 package org.eclipse.tracecompass.tmf.analysis.xml.core.module;
@@ -26,6 +27,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -41,6 +47,7 @@ import org.eclipse.tracecompass.internal.tmf.analysis.xml.core.Activator;
 import org.eclipse.tracecompass.tmf.analysis.xml.core.stateprovider.TmfXmlStrings;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -80,7 +87,6 @@ public class XmlUtils {
         if (!dir.exists() || !dir.isDirectory()) {
             dir.mkdirs();
         }
-
         return path;
     }
 
@@ -149,6 +155,23 @@ public class XmlUtils {
             Activator.logError(error, e);
             return new Status(IStatus.ERROR, Activator.PLUGIN_ID, error, e);
         }
+        return Status.OK_STATUS;
+    }
+
+    /**
+     * Deletes an XML file from the plugin's path
+     *
+     * @param toDelete
+     *            The XML file to delete
+     * @return Whether the file was successfully deleted
+     * @since 2.0
+     */
+    public static IStatus removeXmlFile(File toDelete) {
+        if (!xmlValidate(toDelete).isOK()) {
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "The XML file is not an active XML Analysis"); //$NON-NLS-1$ ;
+        }
+
+        toDelete.delete();
         return Status.OK_STATUS;
     }
 
@@ -246,7 +269,77 @@ public class XmlUtils {
         } catch (ParserConfigurationException | SAXException | IOException e) {
             return null;
         }
-
     }
 
+    /**
+     * This function allows to save a new value for an attribute in the file
+     * passed as parameter.
+     *
+     * @param copyFile
+     *            The XML file
+     * @param node
+     *            The node to set the new value
+     * @param attribute
+     *            The attribute to change. If its <code>null</code>, we need to
+     *            change the node name
+     * @param value
+     *            The new value for the attribute, or the node name
+     * @throws ParserConfigurationException
+     *             Parsing exception
+     * @throws IOException
+     *             IO exception
+     * @throws SAXException
+     *             SAX exception
+     * @throws TransformerException
+     *             Transform exception
+     * @return Whether the attribute was successfully setted
+     * @since 2.0
+     */
+    public static IStatus setNewAttribute(File copyFile, Node node, String attribute, String value) throws ParserConfigurationException, SAXException, IOException, TransformerException {
+
+        // Parse the files
+        DocumentBuilderFactory dbFact = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFact.newDocumentBuilder();
+        Document doc = dBuilder.parse(copyFile);
+
+        // Find the node to be modified
+        boolean docChanged = false;
+        NodeList nodes = doc.getElementsByTagName(node.getNodeName());
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Node currentNode = nodes.item(i);
+            if (nodes.item(i).isEqualNode(node)) {
+                if (attribute != null) {
+                    if (nodes.item(i).getAttributes().getNamedItem(attribute) != null) {
+                        nodes.item(i).getAttributes().getNamedItem(attribute).setNodeValue(value);
+                    }
+                } else {
+                    Node parent = currentNode.getParentNode();
+                    // create a new node with the new NodeName value
+                    Element newChild = doc.createElement(value);
+                    // copy all the attributes from the oldNode
+                    NamedNodeMap attributes = currentNode.getAttributes();
+                    for (int j = 0; j < attributes.getLength(); j++) {
+                        Node att = attributes.item(j);
+                        newChild.setAttribute(att.getNodeName(), att.getNodeValue());
+                    }
+                    // replace the node by the new one in the parent
+                    parent.replaceChild(newChild, currentNode);
+                }
+                docChanged = true;
+                break;
+            }
+        }
+
+        // update the files
+        if (docChanged) {
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(new File(copyFile.getAbsolutePath()));
+            transformer.transform(source, result);
+            return new Status(IStatus.OK, Activator.PLUGIN_ID, "The new attribute is set"); //$NON-NLS-1$
+        }
+
+        return new Status(IStatus.INFO, Activator.PLUGIN_ID, "Attribute not found - No changes"); //$NON-NLS-1$
+    }
 }

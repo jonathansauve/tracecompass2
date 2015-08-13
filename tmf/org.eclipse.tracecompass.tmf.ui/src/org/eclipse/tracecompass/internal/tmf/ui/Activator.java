@@ -107,11 +107,12 @@ public class Activator extends AbstractUIPlugin {
 
     /**
      * Returns a preference store for org.eclipse.linux.tmf.core preferences
+     *
      * @return the preference store
      */
     public IPreferenceStore getCorePreferenceStore() {
         if (fCorePreferenceStore == null) {
-            fCorePreferenceStore= new ScopedPreferenceStore(InstanceScope.INSTANCE, PLUGIN_CORE_ID);
+            fCorePreferenceStore = new ScopedPreferenceStore(InstanceScope.INSTANCE, PLUGIN_CORE_ID);
         }
         return fCorePreferenceStore;
     }

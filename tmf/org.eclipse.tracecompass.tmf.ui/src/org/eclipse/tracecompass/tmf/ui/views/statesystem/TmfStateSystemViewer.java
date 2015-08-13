@@ -210,7 +210,9 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
         TmfTreeViewerEntry traceEntry = new TmfTreeViewerEntry(trace.getName());
         Iterable<ITmfAnalysisModuleWithStateSystems> modules = TmfTraceUtils.getAnalysisModulesOfClass(trace, ITmfAnalysisModuleWithStateSystems.class);
         for (ITmfAnalysisModuleWithStateSystems module : modules) {
-            /* Just schedule the module, the data will be filled when available */
+            /*
+             * Just schedule the module, the data will be filled when available
+             */
             module.schedule();
             if (module instanceof TmfStateSystemAnalysisModule) {
                 // TODO: add this method to ITmfAnalysisModuleWithStateSystems
@@ -264,9 +266,7 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
                 ITmfStateInterval interval = fullState.get(quark);
                 StateEntry stateEntry = findStateEntry(parent, quark);
                 if (stateEntry == null) {
-                    boolean modified = fFilterStatus ?
-                            interval.getStartTime() == timestamp :
-                                !interval.getStateValue().isNull();
+                    boolean modified = fFilterStatus ? interval.getStartTime() == timestamp : !interval.getStateValue().isNull();
                     stateEntry = new StateEntry(ss.getAttributeName(quark), quark, ss.getFullAttributePath(quark),
                             interval.getStateValue(),
                             new TmfTimestamp(interval.getStartTime(), ITmfTimestamp.NANOSECOND_SCALE),
@@ -277,9 +277,9 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
                     updateStateEntries(ss, fullState, stateEntry, quark, timestamp);
 
                     /*
-                     * Add this entry to parent if filtering is off, or
-                     * if the entry has children to display, or
-                     * if there is a state change at the current timestamp
+                     * Add this entry to parent if filtering is off, or if the
+                     * entry has children to display, or if there is a state
+                     * change at the current timestamp
                      */
                     if (!fFilterStatus || stateEntry.hasChildren() || interval.getStartTime() == timestamp) {
                         parent.addChild(stateEntry);
@@ -310,6 +310,7 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
         }
         return null;
     }
+
     /**
      * Set the entries as out of range
      */
@@ -352,20 +353,43 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
         updateContent(getSelectionBeginTime(), getSelectionEndTime(), true);
     }
 
-    private static class StateSystemEntry extends TmfTreeViewerEntry {
+    /**
+     * Objects of this class contain all the relative information of a state
+     * system.
+     *
+     * @since 2.0
+     */
+    public static class StateSystemEntry extends TmfTreeViewerEntry {
         private final @NonNull ITmfStateSystem fSS;
 
+        /**
+         * Public constructor
+         *
+         * @param ss
+         *            The state system
+         */
         public StateSystemEntry(@NonNull ITmfStateSystem ss) {
             super(ss.getSSID());
             fSS = ss;
         }
 
+        /**
+         * Get the state system
+         *
+         * @return The state system
+         */
         public @NonNull ITmfStateSystem getSS() {
             return fSS;
         }
     }
 
-    private class StateEntry extends TmfTreeViewerEntry {
+    /**
+     * Objects of this class contain all the relative information of the state
+     * of an entry.
+     *
+     * @since 2.0
+     */
+    public class StateEntry extends TmfTreeViewerEntry {
 
         private final int fQuark;
         private final String fFullPath;
@@ -375,6 +399,24 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
         private boolean fModified;
         private boolean fOutOfRange = false;
 
+        /**
+         * Public constructor
+         *
+         * @param name
+         *            The name of this entry
+         * @param quark
+         *            The quark (id)
+         * @param fullPath
+         *            Full path in the state system
+         * @param value
+         *            The value
+         * @param start
+         *            The start time
+         * @param end
+         *            The end time
+         * @param modified
+         *            Whether this entry has bee modify or not
+         */
         public StateEntry(String name, int quark, String fullPath, ITmfStateValue value, @NonNull TmfTimestamp start, @NonNull TmfTimestamp end, boolean modified) {
             super(name);
             fQuark = quark;
@@ -385,14 +427,29 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
             fModified = modified;
         }
 
+        /**
+         * Get the quark attribute
+         *
+         * @return The quark (id)
+         */
         public int getQuark() {
             return fQuark;
         }
 
+        /**
+         * Get the full path
+         *
+         * @return The full path
+         */
         public String getFullPath() {
             return fFullPath;
         }
 
+        /**
+         * Get the start time
+         *
+         * @return The start time
+         */
         public String getStartTime() {
             if (fOutOfRange) {
                 return EMPTY_STRING;
@@ -400,6 +457,11 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
             return fStart.toString();
         }
 
+        /**
+         * Get the end time
+         *
+         * @return The end time
+         */
         public String getEndTime() {
             if (fOutOfRange) {
                 return EMPTY_STRING;
@@ -407,6 +469,11 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
             return fEnd.toString();
         }
 
+        /**
+         * Get the value of this attribute
+         *
+         * @return The value
+         */
         public String getValue() {
             if (fOutOfRange) {
                 return Messages.OutOfRangeMsg;
@@ -423,6 +490,11 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
             }
         }
 
+        /**
+         * Get the type of this attribute
+         *
+         * @return The type
+         */
         public String getType() {
             if (fOutOfRange) {
                 return EMPTY_STRING;
@@ -442,10 +514,25 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
             }
         }
 
+        /**
+         * Get the modified value
+         *
+         * @return True if modified, false otherwise
+         */
         public boolean isModified() {
             return fModified;
         }
 
+        /**
+         * Allows the update of this entry.
+         *
+         * @param value
+         *            The new value
+         * @param start
+         *            The new start time
+         * @param end
+         *            The new end time
+         */
         public void update(ITmfStateValue value, @NonNull TmfTimestamp start, @NonNull TmfTimestamp end) {
             fModified = false;
             fOutOfRange = false;
@@ -457,6 +544,9 @@ public class TmfStateSystemViewer extends AbstractTmfTreeViewer {
             }
         }
 
+        /**
+         * Set this entry to out of range
+         */
         public void setOutOfRange() {
             fModified = false;
             fOutOfRange = true;

@@ -34,9 +34,6 @@ import org.eclipse.ui.PlatformUI;
  */
 public class TraceUtils {
 
-    private TraceUtils() {
-    }
-
     /**
      * Displays an error message in a box
      *

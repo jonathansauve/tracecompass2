@@ -13,7 +13,6 @@
 
 package org.eclipse.tracecompass.tmf.ui.viewers.table;
 
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,12 +75,13 @@ public class TmfSimpleTableViewer extends TmfViewer {
 
         @Override
         public void widgetSelected(SelectionEvent e) {
+
             Table table = fTableViewer.getTable();
+            table.setSortDirection(getSortDirection());
             TableColumn prevSortcolumn = table.getSortColumn();
             if (prevSortcolumn == fColumn) {
                 flipSortDirection();
             }
-            table.setSortDirection(fDirection);
             table.setSortColumn(fColumn);
             ViewerCompoundComparator comparator = fComparators.get(fColumn.getText());
             if (fDirection == SWT.DOWN) {
@@ -89,20 +89,19 @@ public class TmfSimpleTableViewer extends TmfViewer {
             } else {
                 fTableViewer.setComparator(new InvertSorter(comparator));
             }
-            sortOrderChanged();
         }
     }
 
     private class InvertSorter extends ViewerCompoundComparator {
+        private final ViewerComparator fViewerComparator;
 
-        public InvertSorter(final ViewerComparator vc) {
-            super(new Comparator<Object>() {
-                                @Override
-                public int compare(Object e1, Object e2) {
-                    return vc.compare(null, e2, e1);
-                }
+        public InvertSorter(ViewerComparator vc) {
+            fViewerComparator = vc;
+        }
 
-            });
+        @Override
+        public int compare(Object e1, Object e2) {
+            return -fViewerComparator.compare(null, e1, e2);
         }
 
     }
@@ -172,22 +171,17 @@ public class TmfSimpleTableViewer extends TmfViewer {
         // override me!
     }
 
-    /**
-     * Reverse the sort direction
-     */
     private void flipSortDirection() {
         if (fDirection == SWT.DOWN) {
             fDirection = SWT.UP;
         } else {
             fDirection = SWT.DOWN;
         }
+
     }
 
-    /**
-     * Called when the sort order has changed.
-     */
-    protected void sortOrderChanged() {
-        // Do nothing
+    private int getSortDirection() {
+        return fDirection;
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 École Polytechnique de Montréal
+ * Copyright (c) 2014, 2015 École Polytechnique de Montréal
  *
  * All rights reserved. This program and the accompanying materials are made
  * available under the terms of the Eclipse Public License v1.0 which
@@ -8,6 +8,7 @@
  *
  * Contributors:
  *   Geneviève Bastien - Initial API and implementation
+ *   Jonathan Sauvé - Add test for the XmlUtils#removeXmlFile(File) method
  *******************************************************************************/
 
 package org.eclipse.tracecompass.tmf.analysis.xml.core.tests.module;
@@ -68,11 +69,7 @@ public class XmlUtilsTest {
 
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IPath workspacePath = workspace.getRoot().getRawLocation();
-        workspacePath = workspacePath.addTrailingSeparator()
-                .append(".metadata").addTrailingSeparator().append(".plugins")
-                .addTrailingSeparator()
-                .append("org.eclipse.tracecompass.tmf.analysis.xml.core")
-                .addTrailingSeparator().append("xml_files");
+        workspacePath = workspacePath.addTrailingSeparator().append(".metadata").addTrailingSeparator().append(".plugins").addTrailingSeparator().append("org.eclipse.tracecompass.tmf.analysis.xml.core").addTrailingSeparator().append("xml_files");
 
         assertEquals(xmlPath, workspacePath);
     }
@@ -130,10 +127,11 @@ public class XmlUtilsTest {
     }
 
     /**
-     * test the {@link XmlUtils#addXmlFile(File)} method
+     * test the {@link XmlUtils#addXmlFile(File)} method and
+     * {@link XmlUtils#removeXmlFile(File)}
      */
     @Test
-    public void testXmlAddFile() {
+    public void testXmlAddAndRemoveFile() {
         /* Check the file does not exist */
         IPath xmlPath = XmlUtils.getXmlFilesPath().addTrailingSeparator().append("test_valid.xml");
         File destFile = xmlPath.toFile();
@@ -141,12 +139,21 @@ public class XmlUtilsTest {
 
         /* Add test_valid.xml file */
         File testXmlFile = TmfXmlTestFiles.VALID_FILE.getFile();
-        if ((testXmlFile == null) || !testXmlFile.exists()) {
-            fail("XML test file does not exist");
-        }
 
+        assertTrue(testXmlFile.exists());
+        assertNotNull(testXmlFile);
         XmlUtils.addXmlFile(testXmlFile);
         assertTrue(destFile.exists());
+
+        XmlUtils.removeXmlFile(testXmlFile);
+        File[] xmlFiles = XmlUtils.getXmlFilesPath().toFile().listFiles();
+        boolean found = false;
+        for (int i = 0; i < xmlFiles.length; i++) {
+            if (xmlFiles[i].getName().equals(testXmlFile.getName())) {
+                found = true;
+            }
+        }
+        assertFalse(found);
     }
 
     private static final @NonNull String ANALYSIS_ID = "kernel.linux.sp";
@@ -207,5 +214,4 @@ public class XmlUtilsTest {
         assertEquals(2, values.size());
 
     }
-
 }

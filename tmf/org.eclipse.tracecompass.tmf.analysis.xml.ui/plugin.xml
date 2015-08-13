@@ -100,5 +100,14 @@
             name="%xmlxychart.view.name"
             restorable="true">
       </view>
+      <view
+            allowMultiple="false"
+            category="org.eclipse.linuxtools.tmf.ui.views.category"
+            class="org.eclipse.tracecompass.internal.tmf.analysis.xml.ui.views.xmlManager.XmlAnalysisManagerView"
+            icon="icons/eview16/xmlManager_view.gif"
+            id="org.eclipse.tracecompass.tmf.analysis.xml.ui.views.xmlManager"
+            name="%view.name"
+            restorable="true">
+      </view>
    </extension>
 </plugin>
